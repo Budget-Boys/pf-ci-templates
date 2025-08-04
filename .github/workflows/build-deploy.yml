@@ -1,4 +1,3 @@
-
 name: Build and Deploy
 
 on:
@@ -17,6 +16,9 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
+
+      - name: Listar arquivos no diretório
+        run: ls -la
 
       - name: Setup Go
         if: ${{ inputs.language == 'go' }}
@@ -38,6 +40,18 @@ jobs:
             go build -o app main.go || echo "Sem arquivo Go"
           elif [[ "${{ inputs.language }}" == "java" ]]; then
             ./gradlew build || mvn clean package || echo "Sem build Java"
+          else
+            echo "Linguagem não suportada"
+            exit 1
+          fi
+
+      - name: Rodar testes
+        run: |
+          echo "Rodando testes para linguagem: ${{ inputs.language }}"
+          if [[ "${{ inputs.language }}" == "go" ]]; then
+            go test ./...
+          elif [[ "${{ inputs.language }}" == "java" ]]; then
+            ./gradlew test || mvn test
           else
             echo "Linguagem não suportada"
             exit 1
